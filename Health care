@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthCare Finder</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f4f6f9;
+}
+
+nav{
+  background:#0f766e;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+nav a{
+  color:white;
+  text-decoration:none;
+  margin:0 10px;
+}
+
+header{
+  background:linear-gradient(to right,#0f766e,#134e4a);
+  color:white;
+  text-align:center;
+  padding:60px 20px;
+}
+
+section{
+  padding:40px 20px;
+}
+
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+}
+
+.card{
+  background:white;
+  padding:15px;
+  border-radius:8px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.1);
+  margin:10px;
+}
+
+.grid{
+  display:flex;
+  flex-wrap:wrap;
+}
+
+.grid .card{
+  flex:1 1 300px;
+}
+
+input, select, button{
+  padding:8px;
+  margin:5px 0;
+  width:100%;
+}
+
+button{
+  background:#0f766e;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#115e59;
+}
+
+footer{
+  background:#0f172a;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+
+@media(max-width:768px){
+  .grid{
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div><b>HealthCare Finder</b></div>
+  <div>
+    <a href="#disease">Diseases</a>
+    <a href="#doctor">Find Doctors</a>
+    <a href="#booking">Book Appointment</a>
+  </div>
+</nav>
+
+<header>
+  <h1>Your Health, Our Priority</h1>
+  <p>Search diseases, find doctors, and book appointments easily.</p>
+</header>
+
+<!-- ================= DISEASE SECTION ================= -->
+<section id="disease">
+  <div class="container">
+    <h2>Disease Encyclopedia</h2>
+
+    <input type="text" id="searchInput" placeholder="Search Disease...">
+    <button onclick="searchDisease()">Search</button>
+
+    <div id="diseaseResult"></div>
+  </div>
+</section>
+
+<!-- ================= DOCTOR SECTION ================= -->
+<section id="doctor">
+  <div class="container">
+    <h2>Find Best Doctors</h2>
+
+    <select id="specializationFilter" onchange="renderDoctors()">
+      <option value="All">All Specialization</option>
+      <option value="Cardiologist">Cardiologist</option>
+      <option value="Neurologist">Neurologist</option>
+      <option value="Pulmonologist">Pulmonologist</option>
+      <option value="General">General</option>
+    </select>
+
+    <select id="feeSort" onchange="renderDoctors()">
+      <option value="low">Fee Low to High</option>
+      <option value="high">Fee High to Low</option>
+    </select>
+
+    <div class="grid" id="doctorList"></div>
+  </div>
+</section>
+
+<!-- ================= BOOKING SECTION ================= -->
+<section id="booking">
+  <div class="container">
+    <h2>Book Appointment</h2>
+
+    <div class="card">
+      <input type="text" id="patientName" placeholder="Patient Name">
+      <input type="number" id="age" placeholder="Age">
+      
+      <select id="gender">
+        <option>Male</option>
+        <option>Female</option>
+      </select>
+
+      <input type="text" id="diseaseName" placeholder="Disease">
+
+      <select id="doctorSelect"></select>
+
+      <input type="date" id="date">
+      
+      <select id="time">
+        <option>09:00 AM</option>
+        <option>11:00 AM</option>
+        <option>02:00 PM</option>
+        <option>05:00 PM</option>
+      </select>
+
+      <button onclick="bookAppointment()">Confirm Booking</button>
+
+      <p id="bookingMessage"></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>HealthCare Finder | Providing quality care since 2024</p>
+</footer>
+
+<script>
+
+// ================= DISEASE DATA =================
+const diseases = [
+{
+  name:"Diabetes",
+  causes:"Insulin problem",
+  symptoms:"High blood sugar",
+  diagnosis:"Blood test",
+  treatment:"Medication & Diet"
+},
+{
+  name:"Asthma",
+  causes:"Airway inflammation",
+  symptoms:"Breathing problem",
+  diagnosis:"Lung function test",
+  treatment:"Inhaler"
+},
+{
+  name:"Heart Disease",
+  causes:"Blocked arteries",
+  symptoms:"Chest pain",
+  diagnosis:"ECG",
+  treatment:"Surgery/Medicine"
+},
+{
+  name:"Migraine",
+  causes:"Stress & hormones",
+  symptoms:"Severe headache",
+  diagnosis:"Clinical exam",
+  treatment:"Pain relievers"
+},
+{
+  name:"Cancer",
+  causes:"Abnormal cell growth",
+  symptoms:"Weight loss",
+  diagnosis:"Biopsy",
+  treatment:"Chemotherapy"
+}
+];
+
+// ================= DOCTOR DATA =================
+const doctors = [
+{name:"Dr. Sharma", spec:"Cardiologist", exp:10, hospital:"Apollo", rating:4.5, fee:800},
+{name:"Dr. Verma", spec:"Neurologist", exp:8, hospital:"Fortis", rating:4.2, fee:700},
+{name:"Dr. Khan", spec:"Pulmonologist", exp:6, hospital:"AIIMS", rating:4.7, fee:600},
+{name:"Dr. Roy", spec:"General", exp:5, hospital:"City Hospital", rating:4.0, fee:400},
+{name:"Dr. Sen", spec:"Cardiologist", exp:12, hospital:"Medanta", rating:4.8, fee:1000},
+{name:"Dr. Gupta", spec:"General", exp:7, hospital:"AMRI", rating:4.3, fee:500}
+];
+
+// ================= SEARCH FUNCTION =================
+function searchDisease(){
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  const resultDiv = document.getElementById("diseaseResult");
+
+  const found = diseases.find(d => d.name.toLowerCase().includes(query));
+
+  if(found){
+    resultDiv.innerHTML = `
+      <div class="card">
+      <h3>${found.name}</h3>
+      <p><b>Causes:</b> ${found.causes}</p>
+      <p><b>Symptoms:</b> ${found.symptoms}</p>
+      <p><b>Diagnosis:</b> ${found.diagnosis}</p>
+      <p><b>Treatment:</b> ${found.treatment}</p>
+      </div>
+    `;
+  } else {
+    resultDiv.innerHTML = "Disease not found";
+  }
+}
+
+// ================= RENDER DOCTORS =================
+function renderDoctors(){
+  const list = document.getElementById("doctorList");
+  const spec = document.getElementById("specializationFilter").value;
+  const sort = document.getElementById("feeSort").value;
+
+  let filtered = doctors;
+
+  if(spec !== "All"){
+    filtered = filtered.filter(d => d.spec === spec);
+  }
+
+  if(sort === "low"){
+    filtered.sort((a,b)=>a.fee-b.fee);
+  } else {
+    filtered.sort((a,b)=>b.fee-a.fee);
+  }
+
+  list.innerHTML="";
+  filtered.forEach(d=>{
+    list.innerHTML += `
+      <div class="card">
+        <h3>${d.name}</h3>
+        <p>Specialization: ${d.spec}</p>
+        <p>Experience: ${d.exp} years</p>
+        <p>Hospital: ${d.hospital}</p>
+        <p>Rating: ⭐ ${d.rating}</p>
+        <p>Fee: ₹${d.fee}</p>
+      </div>
+    `;
+  });
+}
+
+// ================= BOOKING =================
+function bookAppointment(){
+  const name = document.getElementById("patientName").value;
+  const age = document.getElementById("age").value;
+  const doctor = document.getElementById("doctorSelect").value;
+
+  if(name==="" || age==="" || doctor===""){
+    alert("Please fill all fields");
+    return;
+  }
+
+  const booking = {
+    name,
+    age,
+    doctor,
+    date:document.getElementById("date").value,
+    time:document.getElementById("time").value
+  };
+
+  localStorage.setItem("appointment", JSON.stringify(booking));
+
+  document.getElementById("bookingMessage").innerText="Appointment Booked Successfully!";
+}
+
+// ================= INITIAL LOAD =================
+function loadDoctors(){
+  const select = document.getElementById("doctorSelect");
+  doctors.forEach(d=>{
+    select.innerHTML += `<option>${d.name}</option>`;
+  });
+}
+
+renderDoctors();
+loadDoctors();
+
+</script>
+
+</body>
+</html>
